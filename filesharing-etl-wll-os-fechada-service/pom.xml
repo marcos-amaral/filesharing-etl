@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    
+    <parent>
+        <artifactId>filesharing-etl-services</artifactId>
+        <groupId>com.oi</groupId>
+        <version>1.0.1</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    
+    <artifactId>filesharing-etl-wll-os-fechada-service</artifactId>
+    <packaging>war</packaging>
+    <version>1.0</version>
+    <name>filesharing-etl-wll-os-fechada-service</name>
+    
+    <dependencies>
+        <!-- Microprofile -->
+        <dependency>
+            <groupId>org.eclipse.microprofile.config</groupId>
+            <artifactId>microprofile-config-api</artifactId>
+            <version>2.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.microprofile.health</groupId>
+            <artifactId>microprofile-health-api</artifactId>
+            <version>3.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.microprofile.metrics</groupId>
+            <artifactId>microprofile-metrics-api</artifactId>
+            <version>3.0</version>
+        </dependency>
+        <!-- LIB -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>filesharing-etl-oi-lib</artifactId>
+            <version>1.0.1</version>
+        </dependency>
+        <!-- APACHE POI -->
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>5.0.0</version>
+        </dependency>
+    </dependencies>
+    
+    <profiles>
+        <profile>
+            <id>liberty-war</id>
+        
+            <build>
+                <finalName>${project.artifactId}</finalName>
+                <plugins>
+                    <plugin>
+                        <groupId>io.openliberty.tools</groupId>
+                        <artifactId>liberty-maven-plugin</artifactId>
+                        <configuration>
+                            <bootstrapProperties>
+                                <default.http.port>${wll.osfechada.service.http.port}</default.http.port>
+                                <default.https.port>${wll.osfechada.service.https.port}</default.https.port>
+                                <com.ibm.ws.logging.max.file.size>20</com.ibm.ws.logging.max.file.size>
+                                <com.ibm.ws.logging.max.files>5</com.ibm.ws.logging.max.files>
+                                <default.database.url>${database.url.property}</default.database.url>
+                                <default.database.user>${database.user.property}</default.database.user>
+                                <default.database.password>${database.password.property}</default.database.password>
+                                <default.ftp.host>${ftp.host.property}</default.ftp.host>
+                                <default.ftp.user>${ftp.user.property}</default.ftp.user>
+                                <default.ftp.password>${ftp.password.property}</default.ftp.password>
+                            </bootstrapProperties>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>com.googlecode.maven-download-plugin</groupId>
+                        <artifactId>download-maven-plugin</artifactId>
+                        <version>${version.download-maven-plugin}</version>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>k8s</id>
+            <!-- 1. liberty-maven-plugin -->
+            <!--    Gera fat jar (servidor, dependencias e projeto)-->
+            <!-- 2. kubernetes-maven-plugin -->
+            <!--    - apontar dockerHost para o Deamon correto  -->
+            <!--    - generator:  -->
+            <!--        - from: fabric8/s2i-java (CentOS 7) -->
+            <build>
+                <plugins>
+                    <!-- liberty-maven-plugin -->
+                    <plugin>
+                        <groupId>io.openliberty.tools</groupId>
+                        <artifactId>liberty-maven-plugin</artifactId>
+                        <configuration>
+                            <bootstrapProperties>
+                                <default.http.port>${wll.osfechada.service.http.port}</default.http.port>
+                                <default.https.port>${wll.osfechada.service.https.port}</default.https.port>
+                                <jwt.issuer>${jwt.issuer}</jwt.issuer>
+                                <jwt.sharedKey>${jwt.sharedKey}</jwt.sharedKey>
+                                <com.ibm.ws.logging.max.file.size>20</com.ibm.ws.logging.max.file.size>
+                                <com.ibm.ws.logging.max.files>5</com.ibm.ws.logging.max.files>
+                                <default.database.url>${database.url.property}</default.database.url>
+                                <default.database.user>${database.user.property}</default.database.user>
+                                <default.database.password>${database.password.property}</default.database.password>
+                                <default.ftp.host>${ftp.host.property}</default.ftp.host>
+                                <default.ftp.user>${ftp.user.property}</default.ftp.user>
+                                <default.ftp.password>${ftp.password.property}</default.ftp.password>
+                            </bootstrapProperties>
+                            <runtimeArtifact>
+                                <groupId>io.openliberty</groupId>
+                                <artifactId>openliberty-runtime</artifactId>
+                                <version>RELEASE</version>
+                                <type>zip</type>
+                            </runtimeArtifact>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>package-server</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>create</goal>
+                                    <goal>deploy</goal>
+                                    <goal>package</goal>
+                                </goals>
+                                <configuration>
+                                    <packageName>${project.artifactId}</packageName>
+                                    <packageType>jar</packageType>
+                                    <include>runnable</include>
+                                    <deployPackages>all</deployPackages>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <!-- kubernetes-maven-plugin -->
+                    <plugin>
+                        <groupId>org.eclipse.jkube</groupId>
+                        <artifactId>kubernetes-maven-plugin</artifactId>
+                        <version>1.0.1</version>
+                        
+                        <configuration>
+                            <dockerHost>${target.docker.host}</dockerHost>
+                            <registry>${target.registry.host}</registry>
+                            <buildStrategy>docker</buildStrategy>
+                            
+                            <generator>
+                                <config>
+                                    <openliberty>
+                                        <from>fabric8/s2i-java</from>
+                                        <jolokiaPort>0</jolokiaPort>
+                                        <prometheusPort>0</prometheusPort>
+                                        <webPort>${wll.osfechada.service.https.port}</webPort>
+                                    </openliberty>
+                                </config>
+                            </generator>
+                        </configuration>
+
+                        <!-- Connect k8s:resource, k8s:build -->
+                        <executions>
+                            <execution>
+                                <id>jkube</id>
+                                <goals>
+                                    <goal>resource</goal>
+                                    <goal>build</goal>
+                                    <goal>push</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>

@@ -1,0 +1,50 @@
+<server description="Sample Liberty server">
+
+    <featureManager>
+        <feature>microProfile-3.3</feature>
+        <!-- Conexão BD -->
+        <feature>jdbc-4.2</feature>
+        <!-- FOR SECURITY -->
+        <feature>appSecurity-3.0</feature>
+        <feature>servlet-4.0</feature>
+        <feature>jwt-1.0</feature>
+        <feature>restConnector-2.0</feature>
+        <feature>transportSecurity-1.0</feature>
+    </featureManager>
+
+    <keyStore id="defaultKeyStore" password="yourPassword" />
+
+    <quickStartSecurity userName="etlAdmin" userPassword="123"/>
+
+    <httpEndpoint httpPort="${default.http.port}" httpsPort="${default.https.port}"
+                  id="defaultHttpEndpoint" host="*" />
+
+    <webApplication location="ftp-etl-wll-osfechada-service.war" contextRoot="/ftp-etl-wll-osfechada-service">
+        <!-- enable visibility to third party apis -->
+        <classloader apiTypeVisibility="api,ibm-api,spec,stable,third-party"/>
+    </webApplication>
+
+    <variable name="inMaintenance" value="false"/>
+    
+    <library id="OracleLib">
+        <file name="${server.config.dir}/lib/ojdbc8.jar"/>
+    </library>
+    
+    <!-- Datasource Configuration -->
+    <dataSource id="OracleDataSource" jndiName="jdbc/oracledb">
+        <jdbcDriver libraryRef="OracleLib" />
+        <properties.oracle URL="${default.database.url}" 
+                user="${default.database.user}"
+                password="${default.database.password}"/>
+                
+        <connectionManager maxPoolSize="10" minPoolSize="2"/>
+    </dataSource>
+    
+    <!-- JWT Auth -->
+    <mpJwt id="jwtNgrMonitorConsumer" 
+           signatureAlgorithm="HS256"
+           sharedKey="{xor}aBoXKjwnaC0IMiUHaB0qaA=="
+           keyName="default" 
+           audiences="ftp-etl-wll-osfechada-service" 
+           issuer="com.oi.ftp-etl-services"/>
+</server>

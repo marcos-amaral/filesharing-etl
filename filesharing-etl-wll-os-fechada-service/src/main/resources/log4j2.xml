@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration package="com.everis" status="TRACE">
+    
+    <Properties>
+        <!-- Sets this values to 'false' and 'INFO' for production -->
+        <Property name="immediateFlushParameter" value="true"/>
+        <Property name="includeLocationParameter" value="true"/>
+        <Property name="defaultLoggerLevel" value="TRACE"/>
+        <!--
+            Set the following parameters based on the available disk space to be used with the application log.
+        -->
+        <Property name="pmax" value="20"/>
+        <Property name="psize" value="40 MB"/>
+    </Properties>
+    
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{MM-dd HH:mm:ss.SSS}|[%-5level]|%x|%t|%tp|%c{1}.%M(%L) - %msg%n"/>
+        </Console>
+    </Appenders>
+    
+    <Loggers>
+        <Logger name="com.oi" includeLocation="${includeLocationParameter}" level="${defaultLoggerLevel}" additivity="false">
+            <AppenderRef ref="Console" />
+        </Logger>
+        <Root level="ERROR">
+            <AppenderRef ref="Console" />
+        </Root>
+    </Loggers>
+</Configuration>

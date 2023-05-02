@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.oi</groupId>
+    <artifactId>filesharing-etl-services</artifactId>
+    <version>1.0.1</version>
+    <packaging>pom</packaging>
+    
+    <profiles>
+        <profile>
+            <id>k8s</id>
+            <properties>
+                <!-- Docker Deploy -->
+                <target.docker.host>tcp://HOST:PORT</target.docker.host>
+                <target.registry.host>HOST:PORT</target.registry.host>
+        
+                <!-- General Database Config -->
+                <database.url.property>jdbc:oracle:thin:@//HOST:PORT/SERVICENAME</database.url.property>
+                <database.user.property>USER</database.user.property>
+                <database.password.property>PASSWORD</database.password.property>
+            </properties>
+        </profile>
+    </profiles>
+    
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <!-- Plugins -->
+        <version.maven-war-plugin>3.2.3</version.maven-war-plugin>
+        <version.download-maven-plugin>1.5.1</version.download-maven-plugin>
+        <version.exec-maven-plugin>1.6.0</version.exec-maven-plugin>
+        <!-- LOG4J2 -->
+        <log4jversion>2.11.1</log4jversion>
+        <!-- OpenLiberty runtime -->
+        <version.openliberty-runtime>RELEASE</version.openliberty-runtime>
+        <pagamento.duplicidade.service.http.port>9081</pagamento.duplicidade.service.http.port>
+        <pagamento.duplicidade.service.https.port>9444</pagamento.duplicidade.service.https.port>
+        <wll.osfechada.service.http.port>9082</wll.osfechada.service.http.port>
+        <wll.osfechada.service.https.port>9445</wll.osfechada.service.https.port>
+        
+        <!-- Jwt Auth -->
+        <jwt.issuer>com.oi.ftp-oi-services</jwt.issuer>
+        <jwt.sharedKey>aBoXKjwnaC0IMiUHaB0qaA==</jwt.sharedKey>
+
+        <ftp.host.property>HOST</ftp.host.property>
+        <ftp.user.property>USER</ftp.user.property>
+        <ftp.password.property>PASSWORD</ftp.password.property>
+        
+        <!-- NgrMonitor Database Config -->
+        <database.url.property>jdbc:oracle:thin:@//HOST:PORT/xe</database.url.property>
+        <database.user.property>USER</database.user.property>
+        <database.password.property>PASSWORD</database.password.property>
+    </properties>
+    
+    <dependencies>
+        <dependency>
+            <groupId>jakarta.platform</groupId>
+            <artifactId>jakarta.jakartaee-api</artifactId>
+            <version>8.0.0</version>
+            <scope>provided</scope>
+        </dependency>
+            
+        <!-- LOG4J2 -->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>${log4jversion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>${log4jversion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-web</artifactId>
+            <version>${log4jversion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-jcl</artifactId>
+            <version>${log4jversion}</version>
+        </dependency>
+        <!-- APACHE COMMONS -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.9</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-net</groupId>
+            <artifactId>commons-net</artifactId>
+            <version>3.8.0</version>
+        </dependency>
+    </dependencies>
+    
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-war-plugin</artifactId>
+                    <version>${version.maven-war-plugin}</version>
+                    <configuration>
+                        <failOnMissingWebXml>false</failOnMissingWebXml>
+                        <packagingExcludes>pom.xml</packagingExcludes>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>io.openliberty.tools</groupId>
+                    <artifactId>liberty-maven-plugin</artifactId>
+                    <version>3.2</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+    
+    <modules>
+        <module>filesharing-etl-oi-lib</module>
+        <module>filesharing-etl-wll-os-fechada-service</module>
+    </modules>
+    <name>filesharing-etl-services</name>
+</project>
